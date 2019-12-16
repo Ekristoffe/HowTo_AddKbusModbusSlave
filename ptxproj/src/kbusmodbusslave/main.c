@@ -79,7 +79,8 @@ static void start_daemon(void)
     if (pid > 0)
         exit (EXIT_SUCCESS);
 
-    if (setsid() < 0) {
+    if (setsid() < 0) 
+    {
         fprintf(stderr, "Unable to set session id!\n");
         exit (EXIT_FAILURE);
     }
@@ -109,21 +110,21 @@ void signal_handler(int sig)
 
 int main_startUpModules(void)
 {
-    //Start Modbus-Thread
+    // Start Modbus-Thread
     if (modbus_start() < 0)
     {
         fprintf(stderr, "Failed to start Modbus thread!\n");
         return -1;
     }
 
-    //Start KBUS-Thread
+    // Start KBUS-Thread
     if (kbus_start() < 0)
     {
         fprintf(stderr, "Failed to start KBUS thread!\n");
         return -2;
     }
 
-    //Start OMS LED-Thread
+    // Start OMS LED-Thread
     if (oms_led_start() < 0)
     {
         fprintf(stderr, "Failed to start OMS LED thread!\n");
@@ -157,50 +158,48 @@ int main(int argc, char *argv[])
         dprintf(VERBOSE_STD, "Unable to set configuration defaults - EXIT\n");
         exit(-1);
     }
-    //read configuration file
+    // read configuration file
     if(conf_getConfig() < 0)
     {
         dprintf(VERBOSE_STD, "No configuration is found - EXIT\n");
         exit(-1);
     }
 
-    //parse programm options
+    // parse programm options
     while ( (c = getopt_long(argc, argv, "hdv:", long_options, NULL)) != -1)
     {
-        switch (c) {
-
-         case 'v':
-          if (str2int(&vlevel, optarg, 10) == STR2INT_SUCCESS)
-          {
-              vlevel=atoi(optarg);
-              dprintf (VERBOSE_INFO, "verbosity level is %d\n", vlevel);
-          }
-          break;
-
-         case 'd':
-          dprintf(VERBOSE_STD, "Not running in background\n");
-          daemon_flag = 0;
-          break;
-
-         case ':':       /* Option without required operand */
-         case 'h':
-         case '?':
-          usage( argv[0], TRUE );
-          break;
-
-         default:
-          printf ("?? getopt returned character code 0%o ??\n", c);
+        switch (c) 
+        {
+            case 'v':
+                if (str2int(&vlevel, optarg, 10) == STR2INT_SUCCESS)
+                {
+                    vlevel=atoi(optarg);
+                    dprintf (VERBOSE_INFO, "verbosity level is %d\n", vlevel);
+                }
+                break;
+            case 'd':
+                dprintf(VERBOSE_STD, "Not running in background\n");
+                daemon_flag = 0;
+                break;
+            case ':':       /* Option without required operand */
+            case 'h':
+            case '?':
+                usage( argv[0], TRUE );
+                break;
+            default:
+                printf ("?? getopt returned character code 0%o ??\n", c);
+                break;
         }
     }
 
-    //Demonize
+    // Demonize
     if(daemon_flag)
     {
         start_daemon();
     }
     dprintf(VERBOSE_STD, "%s running...\n", argv[0]);
 
-    //Connect signal handler
+    // Connect signal handler
     signal(SIGINT, signal_handler);
     signal(SIGKILL, signal_handler);
     signal(SIGABRT, signal_handler);
@@ -211,10 +210,10 @@ int main(int argc, char *argv[])
         exit(-1);
     }
 
-    //MAIN THREAD LOOP
+    // MAIN THREAD LOOP
     while (main_running)
     {
-        //sleep 1000ms
+        // sleep 1000ms
         usleep(1000*1000);
     }
 

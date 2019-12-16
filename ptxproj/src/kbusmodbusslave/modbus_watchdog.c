@@ -83,7 +83,7 @@ static void modbusWatchdog_setTimeout(void)
     watchdogTimeout = mb_watchdog_mapping->tab_registers[0];
     modbusWatchdog_resetMinimalTime(watchdogTimeout);
     dprintf(VERBOSE_STD, "Watchdog Timeout: %ums\n", watchdogTimeout * 100);
-    //modbusWatchdog_setMinimalTime(watchdogTimeout);
+    // modbusWatchdog_setMinimalTime(watchdogTimeout);
 }
 
 //------------------------------------------------------------------------------------
@@ -125,15 +125,15 @@ static void *modbusWatchdog_task(void (*watchdogExpiredFkt))
                 modbusWatchdog_setMinimalTime(--timeout);
                 dprintf(VERBOSE_DEBUG, "MODBUS Watchdog active: %u\n", timeout);
             }
-            else //expired
+            else // expired
             {
                 dprintf(VERBOSE_STD, "MODBUS Watchdog expired\n");
-                //Execute callback function
+                // Execute callback function
                 if (function != NULL)
                 {
                     function();
                 }
-                //stop Watchdog
+                // stop Watchdog
                 modbusWatchdog_stop();
             }
         }
@@ -147,17 +147,16 @@ int modbusWatchdog_init(void (*watchdogExpiredFkt)())
 {
     dprintf(VERBOSE_STD, "Watchdog Init\n");
     mb_watchdog_mapping = modbus_mapping_new(0, 0, 12, 0);
-    if (mb_watchdog_mapping == NULL) {
-        fprintf(stderr, "Failed to allocate the mapping: %s\n",
-                modbus_strerror(errno));
+    if (mb_watchdog_mapping == NULL) 
+    {
+        fprintf(stderr, "Failed to allocate the mapping: %s\n", modbus_strerror(errno));
         return -1;
     }
 
     modbusWatchdog_settingDefaults(mb_watchdog_mapping);
     watchdogTimeout = mb_watchdog_mapping->tab_registers[0];
 
-    if (pthread_create(&modbusWatchdog_thread, NULL,
-                       &modbusWatchdog_task, (void *) watchdogExpiredFkt) != 0)
+    if (pthread_create(&modbusWatchdog_thread, NULL, &modbusWatchdog_task, (void *) watchdogExpiredFkt) != 0)
     {
         return -2;
     }
@@ -216,81 +215,76 @@ int modbusWatchdog_parseModbusCommand(modbus_t *ctx, uint8_t *command, int comma
     uint16_t address = (command[offset + 1] << 8) + command[offset + 2];
     static unsigned char modbusWatchdog_stopFlag = FALSE;
 
-    //manipulate address
+    // manipulate address
     uint16_t fakeAddress = address - MODBUSWATCHDOG_REGISTER_START_ADDRESS;
 
     switch(function)
     {
-     case _FC_READ_HOLDING_REGISTERS:
-      modbusWatchdog_setStatus();
-      modbus_reply_offset(ctx, command, command_len, mb_watchdog_mapping, MODBUSWATCHDOG_REGISTER_START_ADDRESS);
-      break;
-     case _FC_WRITE_SINGLE_REGISTER:
-      if (fakeAddress == 0) //Watchdog timeout
-      {
-          if (modbusWatchdog_active == FALSE)
-          {
-              modbus_reply_offset(ctx, command, command_len, mb_watchdog_mapping, MODBUSWATCHDOG_REGISTER_START_ADDRESS);
-              modbusWatchdog_setTimeout(); //set new timeout only when watchdog inactive.
-          }
-          else
-          {
-              modbus_reply_exception(ctx, command, MODBUS_EXCEPTION_ILLEGAL_DATA_VALUE);
-          }
-      }
-      else if (fakeAddress == 3) //Watchdog trigger
-      {
-          modbus_reply_offset(ctx, command, command_len, mb_watchdog_mapping, MODBUSWATCHDOG_REGISTER_START_ADDRESS);
-          if (mb_watchdog_mapping->tab_registers[fakeAddress] > 0) // start Watchdog if > 0
-          {
-              if (modbusWatchdog_active == FALSE)
-              {
-                  timeout = modbusWatchdog_getTimeout();
-                  modbusWatchdog_resetMinimalTime(timeout);
-                  modbusWatchdog_start();
-              }
-              else
-              {
-                  modbusWatchdog_trigger();
-              }
-          }
-
-          //reset value
-          mb_watchdog_mapping->tab_registers[fakeAddress] = 0;
-
-      }
-      else if (fakeAddress == 4) // Min Triggertime
-      {
-          modbus_reply_exception(ctx, command, MODBUS_EXCEPTION_ILLEGAL_FUNCTION );
-      }
-      else if (fakeAddress == 8) //Watchdog stoppen
-      {
-          modbus_reply_offset(ctx, command, command_len, mb_watchdog_mapping, MODBUSWATCHDOG_REGISTER_START_ADDRESS);
-
-          if (mb_watchdog_mapping->tab_registers[fakeAddress] == 0x55AA)
-          {
-              modbusWatchdog_stopFlag = TRUE;
-          }
-          else if ((modbusWatchdog_stopFlag == TRUE) && 
-              (mb_watchdog_mapping->tab_registers[fakeAddress] == 0xAA55))
-          {
-              dprintf(VERBOSE_STD, "Watchdog STOP\n");
-              modbusWatchdog_stop();
-              modbusWatchdog_stopFlag = FALSE;
-          }
-          else
-          {
-              modbusWatchdog_stopFlag = FALSE;
-          }
-      }
-      else
-      {
-          modbus_reply_offset(ctx, command, command_len, mb_watchdog_mapping, MODBUSWATCHDOG_REGISTER_START_ADDRESS);
-      }
-      break;
-     default:
-      modbus_reply_exception(ctx, command, MODBUS_EXCEPTION_ILLEGAL_FUNCTION );
+        case _FC_READ_HOLDING_REGISTERS:
+            modbusWatchdog_setStatus();
+            modbus_reply_offset(ctx, command, command_len, mb_watchdog_mapping, MODBUSWATCHDOG_REGISTER_START_ADDRESS);
+            break;
+        case _FC_WRITE_SINGLE_REGISTER:
+            if (fakeAddress == 0) // Watchdog timeout
+            {
+                if (modbusWatchdog_active == FALSE)
+                {
+                    modbus_reply_offset(ctx, command, command_len, mb_watchdog_mapping, MODBUSWATCHDOG_REGISTER_START_ADDRESS);
+                    modbusWatchdog_setTimeout(); // set new timeout only when watchdog inactive.
+                }
+                else
+                {
+                    modbus_reply_exception(ctx, command, MODBUS_EXCEPTION_ILLEGAL_DATA_VALUE);
+                }
+            }
+            else if (fakeAddress == 3) // Watchdog trigger
+            {
+                modbus_reply_offset(ctx, command, command_len, mb_watchdog_mapping, MODBUSWATCHDOG_REGISTER_START_ADDRESS);
+                if (mb_watchdog_mapping->tab_registers[fakeAddress] > 0) // start Watchdog if > 0
+                {
+                    if (modbusWatchdog_active == FALSE)
+                    {
+                        timeout = modbusWatchdog_getTimeout();
+                        modbusWatchdog_resetMinimalTime(timeout);
+                        modbusWatchdog_start();
+                    }
+                    else
+                    {
+                        modbusWatchdog_trigger();
+                    }
+                }
+                // reset value
+                mb_watchdog_mapping->tab_registers[fakeAddress] = 0;
+            }
+            else if (fakeAddress == 4) // Min Triggertime
+            {
+                modbus_reply_exception(ctx, command, MODBUS_EXCEPTION_ILLEGAL_FUNCTION );
+            }
+            else if (fakeAddress == 8) // Watchdog stoppen
+            {
+                modbus_reply_offset(ctx, command, command_len, mb_watchdog_mapping, MODBUSWATCHDOG_REGISTER_START_ADDRESS);
+                if (mb_watchdog_mapping->tab_registers[fakeAddress] == 0x55AA)
+                {
+                    modbusWatchdog_stopFlag = TRUE;
+                }
+                else if ((modbusWatchdog_stopFlag == TRUE) && (mb_watchdog_mapping->tab_registers[fakeAddress] == 0xAA55))
+                {
+                    dprintf(VERBOSE_STD, "Watchdog STOP\n");
+                    modbusWatchdog_stop();
+                    modbusWatchdog_stopFlag = FALSE;
+                }
+                else
+                {
+                    modbusWatchdog_stopFlag = FALSE;
+                }
+            }
+            else
+            {
+                modbus_reply_offset(ctx, command, command_len, mb_watchdog_mapping, MODBUSWATCHDOG_REGISTER_START_ADDRESS);
+            }
+            break;
+        default:
+            modbus_reply_exception(ctx, command, MODBUS_EXCEPTION_ILLEGAL_FUNCTION );
     }
-
     return 0;
 }

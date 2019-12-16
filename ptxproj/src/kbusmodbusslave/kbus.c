@@ -56,7 +56,7 @@ static void kbus_update(void);
 //---------------------------------------------------------------------------------------------------------------------------------
 #include <signal.h>
 #include <time.h>
-static timer_t kbus_timerID; //*< @brief Global timer handle*/
+static timer_t kbus_timerID; // *< @brief Global timer handle*/
 
 /**
  * @brief Setting the interval time for timer
@@ -173,7 +173,7 @@ static int kbus_open(void)
         }
     }
 
-    //If no KBUS-Device is found
+    // If no KBUS-Device is found
     if (kbusId == -1)
     {
         fprintf(stderr, "No KBUS device found\n");
@@ -216,7 +216,7 @@ static int kbus_setMode(tApplicationState ev)
     event.State = ev;
     if (adi->ApplicationStateChanged(event) != DAL_SUCCESS)
     {
-        //Set application state failed
+        // Set application state failed
         fprintf(stderr, "Set application state failed\n");
         adi->CloseDevice(kbusDeviceId);
         adi->Exit();
@@ -314,28 +314,25 @@ static int kbus_getTerminalType(int cnt)
 
     for( i = 1; i <= cnt; i++)
     {
-        adi->CallDeviceSpecificFunction(LIBPACKBUS_DAL_FUNC_READ_TAB_9,
-                                        &result, i, &value);
+        adi->CallDeviceSpecificFunction(LIBPACKBUS_DAL_FUNC_READ_TAB_9, &result, i, &value);
         if ((result == 0) && (value != 0))
         {
             modules[i-1].series = 750;
-            modules[i-1].value = value; //store data
+            modules[i-1].value = value; // store data
             modules[i-1].spec1 = 0;
             modules[i-1].spec2 = 0;
 
             if ((value & 0x8000) == 0)// if non digital I/O
             {
 
-                adi->CallDeviceSpecificFunction(LIBPACKBUS_DAL_FUNC_READ_CONF_REG,
-                                                &result, i, 16, &value);
+                adi->CallDeviceSpecificFunction(LIBPACKBUS_DAL_FUNC_READ_CONF_REG, &result, i, 16, &value);
 
-                if ((result == 0) && (value & 0x100)) //series 753
+                if ((result == 0) && (value & 0x100)) // series 753
                 {
                     modules[i-1].series = 753;
                 }
 
-                adi->CallDeviceSpecificFunction(LIBPACKBUS_DAL_FUNC_READ_CONF_REG,
-                                                &result, i, 30, &value);
+                adi->CallDeviceSpecificFunction(LIBPACKBUS_DAL_FUNC_READ_CONF_REG, &result, i, 30, &value);
 
                 //----LET THE MAGIC HAPPEN----?????-----
                 if ((result == 0) && (value != 0))
@@ -347,16 +344,14 @@ static int kbus_getTerminalType(int cnt)
                     }
                     else
                     {
-                        adi->CallDeviceSpecificFunction(LIBPACKBUS_DAL_FUNC_READ_CONF_REG,
-                                                        &result, i, 29, &value);
+                        adi->CallDeviceSpecificFunction(LIBPACKBUS_DAL_FUNC_READ_CONF_REG, &result, i, 29, &value);
 
                         if (result == 0)
                         {
                             modules[i-1].spec1 = value;
                         }
 
-                        adi->CallDeviceSpecificFunction(LIBPACKBUS_DAL_FUNC_READ_CONF_REG,
-                                                        &result, i, 28, &value);
+                        adi->CallDeviceSpecificFunction(LIBPACKBUS_DAL_FUNC_READ_CONF_REG, &result, i, 28, &value);
 
                         if (result == 0)
                         {
@@ -369,11 +364,10 @@ static int kbus_getTerminalType(int cnt)
         else
         {
             return -1;
-
         }
     }
 
-    //Create description string
+    // Create description string
     for (i = 1; i <= cnt; i++)
     {
         char buffer[50];
@@ -398,12 +392,11 @@ static int kbus_getTerminalType(int cnt)
         }
         else
         {
-            written += snprintf(&buffer[written], OS_ARRAY_SIZE(buffer)-written, "%u / %u-%u", modules[i-1].value,
-                               modules[i-1].spec1, modules[i-1].spec2);
+            written += snprintf(&buffer[written], OS_ARRAY_SIZE(buffer)-written, "%u / %u-%u", modules[i-1].value, modules[i-1].spec1, modules[i-1].spec2);
         }
 
         buffer[written] = '\0';
-        written++; //written + '\0'-termination
+        written++; // written + '\0'-termination
 
         modules[i-1].desc_str = malloc(written);
         if (modules[i-1].desc_str == NULL)
@@ -572,7 +565,7 @@ static int kbus_setup(void)
         return -5;
 
     kbus_initialized = TRUE;
-    //Create /proc "/tmp" entry
+    // Create /proc "/tmp" entry
     proc_createEntry(terminalCount, modules, terminalDescription);
 
     bytesToRead = utils_bitCountToByte(kbus_getBitCount_Input());
@@ -613,15 +606,15 @@ static void kbus_loopTilErrorGone(void)
             // CallDeviceSpecificFunction failed
             dprintf(VERBOSE_STD, "CallDeviceSpecificFunction failed\n");
         }
-        //retval is alwaya non successfull because we are in error state.
+        // retval is alwaya non successfull because we are in error state.
         // Function 'libpackbus_Push' successfull
-        //if (retval == DAL_SUCCESS)
+        // if (retval == DAL_SUCCESS)
         {
             adi->WatchdogTrigger();
 
             int error = kbus_getError();
             dprintf(VERBOSE_DEBUG, " !!!! KBUS ERROR: %d\n", error);
-            if (error == 0) //no error
+            if (error == 0) // no error
             {
                 dprintf(VERBOSE_DEBUG, "NO KBUS ERROR\n");
                 return;
@@ -632,7 +625,7 @@ static void kbus_loopTilErrorGone(void)
     }
 }
 
-static int taskId = 0; //not used
+static int taskId = 0; // not used
 
 // process data
 static uint8_t pd_in[4096];    // kbus input process data
@@ -642,18 +635,18 @@ static void kbus_update(void)
 {
     if(pthread_mutex_trylock(&kbus_update_mutex) != 0)
     {
-        return; //Unable to lock mutex - process is active
+        return; // Unable to lock mutex - process is active
     }
 
-    //Error Check
+    // Error Check
     if (kbus_getError())
     {
-        kbus_timerSetTime(&kbus_timerID, 0); //Deactivate timer
+        kbus_timerSetTime(&kbus_timerID, 0); // Deactivate timer
         dprintf(VERBOSE_DEBUG, "-------------------------- KBUS ERROR -------------------\n");
         kbus_loopTilErrorGone();
         modbus_clearAllMappings();
         kbus_reset();
-        kbus_timerSetTime(&kbus_timerID, conf_kbus_cycle_ms); //Reset to orginal-timer cycle
+        kbus_timerSetTime(&kbus_timerID, conf_kbus_cycle_ms); // Reset to orginal-timer cycle
 
     }
     else
@@ -679,14 +672,14 @@ static void kbus_update(void)
 
             adi->WatchdogTrigger();
 
-            //Get Modbus write data copy it to KBUS
+            // Get Modbus write data copy it to KBUS
             int ret= modbus_copy_register_out(pd_out, sizeof(pd_out));
             if (ret < 0)
             {
                 dprintf(VERBOSE_DEBUG, "[KBUS] Mapping write failed: %d\n", ret);
             }
 
-            //Write KBUS
+            // Write KBUS
             adi->WriteStart(kbusDeviceId, taskId); // lock PD-out data
             adi->WriteBytes(kbusDeviceId, taskId, 0, bytesToWrite,
                             (uint8_t *) &pd_out[0]); // write input back
@@ -696,7 +689,7 @@ static void kbus_update(void)
             adi->ReadBytes(kbusDeviceId, taskId, 0, bytesToRead, (uint8_t *) &pd_in[0]);
             adi->ReadEnd(kbusDeviceId, taskId); // unlock PD-In data
 
-            //Copy KBUS data to modbus read
+            // Copy KBUS data to modbus read
             ret = modbus_copy_register_in((uint16_t *)pd_in, kbus_mapBitCountToWordRegister(kbus_getBitCount_Input()));
             if (ret < 0)
        {
@@ -717,9 +710,9 @@ static void kbus_forceUpdate(void)
     if (conf_operation_mode)
     {
         dprintf(VERBOSE_DEBUG, "KBUS Force Update\n");
-        kbus_timerSetTime(&kbus_timerID, 0); //Deactivate timer
+        kbus_timerSetTime(&kbus_timerID, 0); // Deactivate timer
         kbus_update();
-        kbus_timerSetTime(&kbus_timerID, conf_kbus_cycle_ms); //Reset to orginal-timer cycle
+        kbus_timerSetTime(&kbus_timerID, conf_kbus_cycle_ms); // Reset to orginal-timer cycle
     }
 }
 
@@ -846,10 +839,10 @@ int kbus_getTerminals(size_t *cnt, uint16_t *terminalInfo, size_t sizeTerminalIn
     if (cnt == NULL)
         return -3;
 
-    //Copy count
+    // Copy count
     *cnt = terminalCount;
 
-    //copy terminal info
+    // copy terminal info
     memset(terminalInfo, 0, sizeTerminalInfo);
     uint16_t i = 0;
     for (i = 0; i < terminalCount; i++)
@@ -916,7 +909,7 @@ int kbus_getBitCounts(uint16_t *table, size_t table_len)
  */
 int kbus_ApplicationStateStop(void)
 {
-    //Set KBUS timer to 5ms to give I/OCheck more speed
+    // Set KBUS timer to 5ms to give I/OCheck more speed
     kbus_timerSetTime(&kbus_timerID, 5);
     return kbus_setMode(ApplicationState_Stopped);
 }
@@ -929,6 +922,6 @@ int kbus_ApplicationStateStop(void)
 int kbus_ApplicationStateRun(void)
 {
     kbus_setMode(KBUS_APPLICATION_STATE);
-    kbus_timerSetTime(&kbus_timerID, conf_kbus_cycle_ms); //Reset to orginal-timer cycle
+    kbus_timerSetTime(&kbus_timerID, conf_kbus_cycle_ms); // Reset to orginal-timer cycle
     return 0;
 }

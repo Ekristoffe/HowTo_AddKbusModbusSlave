@@ -166,7 +166,7 @@ static void modbusWatchdog_expiredTask(void)
     dprintf(VERBOSE_DEBUG, "ModbusWatchdog Expired Task\n");
     if (mb_mapping_write != NULL)
     {
-        //set all outputs to 0
+        // set all outputs to 0
         pthread_mutex_lock( &write_mapping_mutex );
           modbus_clearAllMappings();
         pthread_mutex_unlock( &write_mapping_mutex );
@@ -175,7 +175,7 @@ static void modbusWatchdog_expiredTask(void)
 
 static void modbus_worker_read(modbus_t *ctx, uint8_t *query, int rc)
 {
-    //calculate the address to switch between mappings
+    // calculate the address to switch between mappings
     int offset = modbus_get_header_length(ctx);
     int function = query[offset];
     dprintf(VERBOSE_INFO, "Function :%d\n", function);
@@ -183,106 +183,105 @@ static void modbus_worker_read(modbus_t *ctx, uint8_t *query, int rc)
 
     switch (function)
     {
-     case _FC_READ_COILS:
-      modbus_mapReadCoils();
-      //Read digital inputs
-      if (address <=511)
-      {
-          modbus_reply(ctx, query, rc, mb_digital_1_in);
-      }
-      //Read digital outputs
-      else if ((address >= 512) && (address <=1023))
-      {
-          modbus_reply_offset(ctx, query, rc, mb_digital_1_write, 512);
-      }
-      else if ((address >=0x8000) && (address <= 0x85F7)) //Digital Input-Area 2 (Bit 513 - 2039)
-      {
-          modbus_reply_offset(ctx, query, rc, mb_digital_2_in, 0x8000);
-      }
-      else if ((address >=0x9000) && (address <= 0x95F7)) //Digital Output-Area 2 (Bit 513 - 2093)
-      {
-          modbus_reply_offset(ctx, query, rc, mb_digital_2_write, 0x9000);
-      }
-      else
-      {
-          modbus_reply_exception(ctx, query, MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS );
-      }
-      break;
-
-     case _FC_READ_DISCRETE_INPUTS:
-     case _FC_READ_HOLDING_REGISTERS:
-     case _FC_READ_INPUT_REGISTERS:
-     case _FC_WRITE_AND_READ_REGISTERS:
-      //Address check
-      if (address <= 255)
-      {
-          //rc is the query size
-          modbus_reply(ctx, query, rc, mb_mapping_in);
-      }
-      else if ((address >= 512) && (address <= 767))
-      {
-          modbus_reply_offset(ctx, query, rc, mb_mapping_write, 512);
-      }
-      // Handle configuration registers
-      else if ((address >=0x1000) && (address <=0x2043))
-      {
-          dprintf(VERBOSE_DEBUG, "Config Dataset\n");
-          //Watchdog
-          if ((address >= 0x1000) && (address <=0x100B))
-          {
-              modbusWatchdog_parseModbusCommand(ctx, query, rc);
-          }
-          //Processdata-Information
-          else if ((address >= 0x1022) && (address <=0x1025))
-          {
-              modbusKBUSInfo_parseModbusCommand(ctx, query, rc);
-          }
-          //MAC-Address
-          else if ((address >= 0x1031) && (address <= 0x1033))
-          {
-              modbusConfigMac_parseModbusCommand(ctx, query, rc);
-          }
-          //Const
-          else if ((address >= 0x2000) && (address <= 0x2008))
-          {
-              modbusConfigConst_parseModbusCommand(ctx, query, rc);
-          }
-          //Short description
-          else if (address == 0x2020)
-          {
-              modbusShortDescription_parseModbusCommand(ctx,query,rc);
-          }
-          //Knot-assembly 1-4
-          else if ((address >= 0x2030) && (address <= 0x2033))
-          {
-              modbusConfig_parseModbusCommand(ctx, query, rc);
-          }
-          else
-          {
-              modbus_reply_exception(ctx, query, MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS );
-          }
-      }
-      //In-Area 2
-      else if ((address >= 0x6000) && (address <= 0x62FB))
-      {
-          modbus_reply_offset(ctx, query, rc, mb_mapping_2_in, 0x6000);
-      }
-      else if  ((address >= 0x7000) && (address <= 0x72FB))
-      {
-          modbus_reply_offset(ctx, query, rc, mb_mapping_2_write, 0x7000);
-      }
-      else
-      {
-          modbus_reply_exception(ctx, query, MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS );
-      }
-
-      break;
+        case _FC_READ_COILS:
+            modbus_mapReadCoils();
+            // Read digital inputs
+            if (address <=511)
+            {
+                modbus_reply(ctx, query, rc, mb_digital_1_in);
+            }
+            // Read digital outputs
+            else if ((address >= 512) && (address <=1023))
+            {
+                modbus_reply_offset(ctx, query, rc, mb_digital_1_write, 512);
+            }
+            else if ((address >=0x8000) && (address <= 0x85F7)) // Digital Input-Area 2 (Bit 513 - 2039)
+            {
+                modbus_reply_offset(ctx, query, rc, mb_digital_2_in, 0x8000);
+            }
+            else if ((address >=0x9000) && (address <= 0x95F7)) // Digital Output-Area 2 (Bit 513 - 2093)
+            {
+                modbus_reply_offset(ctx, query, rc, mb_digital_2_write, 0x9000);
+            }
+            else
+            {
+                modbus_reply_exception(ctx, query, MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS );
+            }
+            break;
+        case _FC_READ_DISCRETE_INPUTS:
+        case _FC_READ_HOLDING_REGISTERS:
+        case _FC_READ_INPUT_REGISTERS:
+        case _FC_WRITE_AND_READ_REGISTERS:
+            // Address check
+            if (address <= 255)
+            {
+                // rc is the query size
+                modbus_reply(ctx, query, rc, mb_mapping_in);
+            }
+            else if ((address >= 512) && (address <= 767))
+            {
+                modbus_reply_offset(ctx, query, rc, mb_mapping_write, 512);
+            }
+            // Handle configuration registers
+            else if ((address >=0x1000) && (address <=0x2043))
+            {
+                dprintf(VERBOSE_DEBUG, "Config Dataset\n");
+                // Watchdog
+                if ((address >= 0x1000) && (address <=0x100B))
+                {
+                    modbusWatchdog_parseModbusCommand(ctx, query, rc);
+                }
+                // Processdata-Information
+                else if ((address >= 0x1022) && (address <=0x1025))
+                {
+                    modbusKBUSInfo_parseModbusCommand(ctx, query, rc);
+                }
+                // MAC-Address
+                else if ((address >= 0x1031) && (address <= 0x1033))
+                {
+                    modbusConfigMac_parseModbusCommand(ctx, query, rc);
+                }
+                // Const
+                else if ((address >= 0x2000) && (address <= 0x2008))
+                {
+                    modbusConfigConst_parseModbusCommand(ctx, query, rc);
+                }
+                // TODO FW Information
+                // Short description
+                else if (address == 0x2020)
+                {
+                    modbusShortDescription_parseModbusCommand(ctx,query,rc);
+                }
+                // Knot-assembly 1-4
+                else if ((address >= 0x2030) && (address <= 0x2033))
+                {
+                    modbusConfig_parseModbusCommand(ctx, query, rc);
+                }
+                else
+                {
+                    modbus_reply_exception(ctx, query, MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS );
+                }
+            }
+            // In-Area 2
+            else if ((address >= 0x6000) && (address <= 0x62FB))
+            {
+                modbus_reply_offset(ctx, query, rc, mb_mapping_2_in, 0x6000);
+            }
+            else if  ((address >= 0x7000) && (address <= 0x72FB))
+            {
+                modbus_reply_offset(ctx, query, rc, mb_mapping_2_write, 0x7000);
+            }
+            else
+            {
+                modbus_reply_exception(ctx, query, MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS );
+            }
+            break;
     }
 }
 
 static void modbus_worker_write(modbus_t *ctx, uint8_t *query, int rc)
 {
-    //calculate the address to switch between mappings
+    // calculate the address to switch between mappings
     int offset = modbus_get_header_length(ctx);
     int function = query[offset];
     dprintf(VERBOSE_INFO, "Function :%d\n", function);
@@ -290,72 +289,70 @@ static void modbus_worker_write(modbus_t *ctx, uint8_t *query, int rc)
 
     switch (function)
     {
-     case _FC_WRITE_SINGLE_COIL:
-     case _FC_WRITE_MULTIPLE_COILS:
-      modbus_mapReadCoils();
-      if (address <=511)//Output Area 1
-      {
-          modbus_reply(ctx, query, rc, mb_digital_1_write);
-      }
-      else if ((address >= 512) && (address <= 1023)) //Output Area 1-Mirror
-      {
-          modbus_reply_offset(ctx, query, rc, mb_digital_1_write, 512);
-      }
-      else if ((address >=0x8000) && (address <= 0x85F7)) //Digital Output-Area 2 (Bit 513 - 2039)
-      {
-          modbus_reply_offset(ctx, query, rc, mb_digital_2_write, 0x8000);
-      }
-      else if ((address >=0x9000) && (address <= 0x95F7)) //Digital Output-Area 2 (Bit 513 - 2093) - Mirror
-      {
-          modbus_reply_offset(ctx, query, rc, mb_digital_2_write, 0x9000);
-      }
-      else
-      {
-          modbus_reply_exception(ctx, query, MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS );
-      }
-      //Map Coilbits to Register.
-      modbus_mapWriteCoilsToRegister();
-      break;
-
-     case _FC_WRITE_SINGLE_REGISTER:
-     case _FC_WRITE_MULTIPLE_REGISTERS:
-     case _FC_WRITE_AND_READ_REGISTERS:
-      if (address <=255)
-      {
-          modbus_reply_offset(ctx, query, rc, mb_mapping_write, 0);
-      }
-      else if ((address >=512) && (address <=767))
-      {
-          modbus_reply_offset(ctx, query, rc, mb_mapping_write, 512);
-      }
-      //Configuration
-      else if ((address >=0x1000) && (address <=0x2043))
-      {
-          //Watchdog
-          if ((address >= 0x1000) && (address <=0x100B))
-          {
-              modbusWatchdog_parseModbusCommand(ctx, query, rc);
-          }
-      }
-      //In-Area 2
-      else if ((address >= 0x6000) && (address <= 0x62FB))
-      {
-          modbus_reply_offset(ctx, query, rc, mb_mapping_2_write, 0x6000);
-      }
-      else if ((address >= 0x7000) && (address <= 0x72FB))
-      {
-          modbus_reply_offset(ctx, query, rc, mb_mapping_2_write, 0x7000);
-      }
-      else
-      {
-          modbus_reply_exception(ctx, query, MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS );
-      }
-      break;
-
-     case _FC_REPORT_SLAVE_ID:
-     case _FC_READ_EXCEPTION_STATUS:
-      dprintf(VERBOSE_DEBUG, "-------------------TODO--------------------\n");
-
+        case _FC_WRITE_SINGLE_COIL:
+        case _FC_WRITE_MULTIPLE_COILS:
+            modbus_mapReadCoils();
+            if (address <=511)// Output Area 1
+            {
+                modbus_reply(ctx, query, rc, mb_digital_1_write);
+            }
+            else if ((address >= 512) && (address <= 1023)) // Output Area 1-Mirror
+            {
+                modbus_reply_offset(ctx, query, rc, mb_digital_1_write, 512);
+            }
+            else if ((address >=0x8000) && (address <= 0x85F7)) // Digital Output-Area 2 (Bit 513 - 2039)
+            {
+                modbus_reply_offset(ctx, query, rc, mb_digital_2_write, 0x8000);
+            }
+            else if ((address >=0x9000) && (address <= 0x95F7)) // Digital Output-Area 2 (Bit 513 - 2093) - Mirror
+            {
+                modbus_reply_offset(ctx, query, rc, mb_digital_2_write, 0x9000);
+            }
+            else
+            {
+                modbus_reply_exception(ctx, query, MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS );
+            }
+            // Map Coilbits to Register.
+            modbus_mapWriteCoilsToRegister();
+            break;
+        case _FC_WRITE_SINGLE_REGISTER:
+        case _FC_WRITE_MULTIPLE_REGISTERS:
+        case _FC_WRITE_AND_READ_REGISTERS:
+            if (address <=255)
+            {
+                modbus_reply_offset(ctx, query, rc, mb_mapping_write, 0);
+            }
+            else if ((address >=512) && (address <=767))
+            {
+                modbus_reply_offset(ctx, query, rc, mb_mapping_write, 512);
+            }
+            // Configuration
+            else if ((address >=0x1000) && (address <=0x2043))
+            {
+                // Watchdog
+                if ((address >= 0x1000) && (address <=0x100B))
+                {
+                    modbusWatchdog_parseModbusCommand(ctx, query, rc);
+                }
+            }
+            // In-Area 2
+            else if ((address >= 0x6000) && (address <= 0x62FB))
+            {
+                modbus_reply_offset(ctx, query, rc, mb_mapping_2_write, 0x6000);
+            }
+            else if ((address >= 0x7000) && (address <= 0x72FB))
+            {
+                modbus_reply_offset(ctx, query, rc, mb_mapping_2_write, 0x7000);
+            }
+            else
+            {
+                modbus_reply_exception(ctx, query, MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS );
+            }
+            break;
+        case _FC_REPORT_SLAVE_ID:
+        case _FC_READ_EXCEPTION_STATUS:
+            dprintf(VERBOSE_DEBUG, "-------------------TODO--------------------\n");
+            break;
     }
 }
 
@@ -380,23 +377,23 @@ static void modbus_worker(modbus_t *ctx, uint8_t *query, int rc)
 
     modbusWatchdog_trigger();
 
-    //modbus write
-    //received Callback
-    //modbus read
+    // modbus write
+    // received Callback
+    // modbus read
     switch (function)
     {
-     case _FC_WRITE_SINGLE_COIL:
-     case _FC_WRITE_MULTIPLE_COILS:
-     case _FC_WRITE_SINGLE_REGISTER:
-     case _FC_WRITE_MULTIPLE_REGISTERS:
-      modbus_worker_write(ctx, query, rc);
-      function_found = TRUE;
-      break;
-     case _FC_WRITE_AND_READ_REGISTERS:
-      modbus_worker_write(ctx, query, rc);
-      //All done we can go back!
-      return;
-      break;
+        case _FC_WRITE_SINGLE_COIL:
+        case _FC_WRITE_MULTIPLE_COILS:
+        case _FC_WRITE_SINGLE_REGISTER:
+        case _FC_WRITE_MULTIPLE_REGISTERS:
+            modbus_worker_write(ctx, query, rc);
+            function_found = TRUE;
+            break;
+        case _FC_WRITE_AND_READ_REGISTERS:
+            modbus_worker_write(ctx, query, rc);
+            // All done we can go back!
+            return;
+            break;
     }
 
     if (modbus_receivedCallback != NULL)
@@ -404,31 +401,32 @@ static void modbus_worker(modbus_t *ctx, uint8_t *query, int rc)
 
     switch (function)
     {
-     case _FC_READ_COILS:
-     case _FC_READ_DISCRETE_INPUTS:
-     case _FC_READ_HOLDING_REGISTERS:
-     case _FC_READ_INPUT_REGISTERS:
-      modbus_worker_read(ctx, query, rc);
-      function_found = TRUE;
-      break;
+        case _FC_READ_COILS:
+        case _FC_READ_DISCRETE_INPUTS:
+        case _FC_READ_HOLDING_REGISTERS:
+        case _FC_READ_INPUT_REGISTERS:
+            modbus_worker_read(ctx, query, rc);
+            function_found = TRUE;
+            break;
     }
 
     if (function_found == FALSE)
     {
-      modbus_reply_exception(ctx, query, MODBUS_EXCEPTION_ILLEGAL_FUNCTION);
+        modbus_reply_exception(ctx, query, MODBUS_EXCEPTION_ILLEGAL_FUNCTION);
     }
 }
 
 static void *modbus_udp_task(void *none)
 {
-    none=none; //-Wunused-parameter
+    none=none; // -Wunused-parameter
     modbus_t *ctx_udp=NULL;
 
     ctx_udp = modbus_new_udp("127.0.0.1", conf_modbus_port);
     int udp_socket = modbus_udp_bind(ctx_udp);
     uint8_t udp_query[MODBUS_TCP_MAX_ADU_LENGTH];
 
-    if (ctx_udp == NULL) {
+    if (ctx_udp == NULL) 
+    {
         fprintf(stderr, "Unable to allocate libmodbus UDP context\n");
         return NULL;
     }
@@ -439,7 +437,7 @@ static void *modbus_udp_task(void *none)
     {
         if (poll(fds, 1, 1000) == 0)
         {
-            //dprintf(VERBOSE_STD, "TIMEOUT UDP\n");
+            // dprintf(VERBOSE_STD, "TIMEOUT UDP\n");
         }
         else
         {
@@ -457,7 +455,6 @@ static void *modbus_udp_task(void *none)
     modbus_close(ctx_udp);
     modbus_free(ctx_udp);
     return NULL;
-
 }
 
 /**
@@ -465,11 +462,11 @@ static void *modbus_udp_task(void *none)
  */
 static void *modbus_task(void *none)
 {
-    none=none; //-Wunused-parameter
+    none=none; // -Wunused-parameter
     int master_socket;
     int server_socket=0;
     int rc;
-    int fdmax=0; //Maximum file descriptor number
+    int fdmax=0; // Maximum file descriptor number
     fd_set refset;
     fd_set rdset;
     modbus_t *ctx;
@@ -481,100 +478,101 @@ static void *modbus_task(void *none)
     dprintf(VERBOSE_DEBUG, "Modbus: Wait for KBUS to be initialized\n");
     while ((kbus_getIsInitialized() == FALSE) && (modbus_running))
     {
-        usleep(50 * 1000); //50ms sleep
+        usleep(50 * 1000); // 50ms sleep
     }
 
-    //check if application was terminated in the meantime
+    // check if application was terminated in the meantime
     if (modbus_running == 0)
     {
         return NULL;
     }
     //-------------------------------------------
 
-    //modbus_mapping_t* modbus_mapping_new(int 'nb_bits', int 'nb_input_bits', int 'nb_registers', int 'nb_input_registers');
+    // modbus_mapping_t* modbus_mapping_new(int 'nb_bits', int 'nb_input_bits', int 'nb_registers', int 'nb_input_registers');
     mb_mapping_in = modbus_mapping_new(0, 0, MODBUS_OUTREGISTER_COUNT, MODBUS_INREGISTER_COUNT);
-    if (mb_mapping_in == NULL) {
-        fprintf(stderr, "Failed to allocate the mapping: %s\n",
-                modbus_strerror(errno));
+    if (mb_mapping_in == NULL) 
+    {
+        fprintf(stderr, "Failed to allocate the mapping: %s\n", modbus_strerror(errno));
         return NULL;
     }
 
     mb_mapping_write = modbus_mapping_new(0, 0, MODBUS_OUTREGISTER_COUNT, MODBUS_INREGISTER_COUNT);
-    if (mb_mapping_write == NULL) {
-        fprintf(stderr, "Failed to allocate the mapping: %s\n",
-                modbus_strerror(errno));
+    if (mb_mapping_write == NULL) 
+    {
+        fprintf(stderr, "Failed to allocate the mapping: %s\n", modbus_strerror(errno));
         return NULL;
     }
 
     mb_mapping_2_in = modbus_mapping_new(0, 0, MODBUS_OUTREGISTER_2_COUNT, MODBUS_INREGISTER_2_COUNT);
-    if (mb_mapping_2_in == NULL) {
-        fprintf(stderr, "Failed to allocate the mapping: %s\n",
-                modbus_strerror(errno));
+    if (mb_mapping_2_in == NULL) 
+    {
+        fprintf(stderr, "Failed to allocate the mapping: %s\n", modbus_strerror(errno));
         return NULL;
     }
 
     mb_mapping_2_write = modbus_mapping_new(0, 0, MODBUS_OUTREGISTER_2_COUNT, MODBUS_INREGISTER_2_COUNT);
-    if (mb_mapping_2_write == NULL) {
-        fprintf(stderr, "Failed to allocate the mapping: %s\n",
-                modbus_strerror(errno));
+    if (mb_mapping_2_write == NULL) 
+    {
+        fprintf(stderr, "Failed to allocate the mapping: %s\n", modbus_strerror(errno));
         return NULL;
     }
 
     //--- Storage for coil read and write ---
     mb_digital_1_in = modbus_mapping_new(MODBUS_BIT_1_COUNT, MODBUS_BIT_1_COUNT, 0, 0);
-    if (mb_digital_1_in == NULL) {
-        fprintf(stderr, "Failed to allocate the mapping: %s\n",
-                modbus_strerror(errno));
+    if (mb_digital_1_in == NULL) 
+    {
+        fprintf(stderr, "Failed to allocate the mapping: %s\n", modbus_strerror(errno));
         return NULL;
     }
 
     mb_digital_1_write = modbus_mapping_new(MODBUS_BIT_1_COUNT, MODBUS_BIT_1_COUNT, 0, 0);
-    if (mb_digital_1_write == NULL) {
-        fprintf(stderr, "Failed to allocate the mapping: %s\n",
-                modbus_strerror(errno));
+    if (mb_digital_1_write == NULL) 
+    {
+        fprintf(stderr, "Failed to allocate the mapping: %s\n", modbus_strerror(errno));
         return NULL;
     }
 
     mb_digital_2_in = modbus_mapping_new(MODBUS_BIT_2_COUNT, MODBUS_BIT_2_COUNT, 0, 0);
-    if (mb_digital_2_in == NULL) {
-        fprintf(stderr, "Failed to allocate the mapping: %s\n",
-                modbus_strerror(errno));
+    if (mb_digital_2_in == NULL) 
+    {
+        fprintf(stderr, "Failed to allocate the mapping: %s\n", modbus_strerror(errno));
         return NULL;
     }
 
     mb_digital_2_write = modbus_mapping_new(MODBUS_BIT_2_COUNT, MODBUS_BIT_2_COUNT, 0, 0);
-    if (mb_digital_2_write == NULL) {
-        fprintf(stderr, "Failed to allocate the mapping: %s\n",
-                modbus_strerror(errno));
+    if (mb_digital_2_write == NULL) 
+    {
+        fprintf(stderr, "Failed to allocate the mapping: %s\n", modbus_strerror(errno));
         return NULL;
     }
     //-------------------------------------------
 
-    //Initialize TCP-Modbus-Connection:
+    // Initialize TCP-Modbus-Connection:
     ctx = modbus_new_tcp("127.0.0.1", conf_modbus_port);
 
     server_socket = modbus_tcp_listen(ctx, conf_max_tcp_connections);
-    //Clear the reference set of socket
+    // Clear the reference set of socket
     FD_ZERO(&refset);
-    //Add the server socket
+    // Add the server socket
     FD_SET(server_socket, &refset);
 
-    //Keep track of the max file descriptor
+    // Keep track of the max file descriptor
     fdmax=server_socket;
 
-    if (ctx == NULL) {
+    if (ctx == NULL) 
+    {
         fprintf(stderr, "Unable to allocate libmodbus context\n");
         return NULL;
     }
 
-    //Enable debug output for modbus
+    // Enable debug output for modbus
     if (vlevel >= VERBOSE_DEBUG)
     {
         dprintf(VERBOSE_DEBUG, "Modbus Debug enabled\n");
         modbus_set_debug(ctx, 1);
     }
 
-    //Set Modbus response delay
+    // Set Modbus response delay
     modbus_set_response_delay(conf_modbus_delay_ms);
 
     if (modbusWatchdog_init(modbusWatchdog_expiredTask) < 0)
@@ -616,8 +614,7 @@ static void *modbus_task(void *none)
     modbus_initialized = TRUE;
     dprintf(VERBOSE_STD, "Modbus-Init complete - Ready for take off\n");
     //--- Start Modbus-UDP Thread
-    if (pthread_create(&modbus_udp_thread, NULL,
-                   &modbus_udp_task, NULL) != 0)
+    if (pthread_create(&modbus_udp_thread, NULL, &modbus_udp_task, NULL) != 0)
     {
         return NULL;
     }
@@ -625,9 +622,9 @@ static void *modbus_task(void *none)
     while (modbus_running)
     {
         rdset = refset;
-        //Reset Timeout
-        //select() may update the timeout argument to  indicate  how  much
-        //time was left.
+        // Reset Timeout
+        // select() may update the timeout argument to  indicate  how  much
+        // time was left.
         modbus_select_timeout.tv_sec = 1;         /* seconds */
         modbus_select_timeout.tv_usec = 0;        /* microseconds */
         if (select(fdmax+1, &rdset, NULL, NULL, &modbus_select_timeout) == -1)
@@ -636,19 +633,19 @@ static void *modbus_task(void *none)
             continue;
         }
 
-        //Run through the existing connections looking for data to be read
+        // Run through the existing connections looking for data to be read
         for (master_socket = 0; master_socket <= fdmax; master_socket++)
         {
             if (FD_ISSET(master_socket, &rdset))
             {
-                //A client is asking a new connection
+                // A client is asking a new connection
                 if (master_socket == server_socket)
                 {
                     socklen_t addrlen;
                     struct sockaddr_in clientaddr;
                     int newfd;
 
-                    //Handle new connection
+                    // Handle new connection
                     addrlen = sizeof(clientaddr);
                     memset(&clientaddr, 0, sizeof(clientaddr));
                     newfd = accept(server_socket, (struct sockaddr *) &clientaddr, &addrlen);
@@ -664,17 +661,16 @@ static void *modbus_task(void *none)
                             // Keep track of the maximum file descriptor
                             fdmax = newfd;
                         }
-                        dprintf(VERBOSE_STD, "New Modbus connection from %s:%d on socket %d\n",
-                                inet_ntoa(clientaddr.sin_addr), clientaddr.sin_port, newfd);
+                        dprintf(VERBOSE_STD, "New Modbus connection from %s:%d on socket %d\n", inet_ntoa(clientaddr.sin_addr), clientaddr.sin_port, newfd);
                     }
                 }
-                else //An already connected master has sent a new query
+                else // An already connected master has sent a new query
                 {
                     modbus_set_socket(ctx, master_socket);
-                    //API-Change made by WAGO:
-                    //int modbus_receive(modbus_t *ctx, uint8_t *req, size_t max_size)
-                    //origin:
-                    //int modbus_receive(modbus_t *ctx, uint8_t *req)
+                    // API-Change made by WAGO:
+                    // int modbus_receive(modbus_t *ctx, uint8_t *req, size_t max_size)
+                    // origin:
+                    // int modbus_receive(modbus_t *ctx, uint8_t *req)
                     rc = modbus_receive(ctx, query, sizeof(query));
                     if (rc != -1)
                     {
@@ -682,10 +678,10 @@ static void *modbus_task(void *none)
                     }
                     else
                     {
-                        //Connection closed by the client, end of server
+                        // Connection closed by the client, end of server
                         dprintf(VERBOSE_STD, "Connection closed on socket %d\n", master_socket);
                         close(master_socket);
-                        //Remove from reference set
+                        // Remove from reference set
                         FD_CLR(master_socket, &refset);
 
                         if (master_socket == fdmax)
@@ -723,8 +719,7 @@ int modbus_start(void)
 {
     modbus_running = 1;
     pthread_mutex_init(&write_mapping_mutex, NULL);
-    if (pthread_create(&modbus_thread, NULL,
-                   &modbus_task, NULL) != 0)
+    if (pthread_create(&modbus_thread, NULL, &modbus_task, NULL) != 0)
     {
         return -1;
     }
@@ -764,7 +759,7 @@ int modbus_copy_register_in(uint16_t *source, size_t n)
         return -1;
     }
 
-    if (n > (MODBUS_OUTREGISTER_COUNT + MODBUS_OUTREGISTER_2_COUNT)) //Check for maximum size
+    if (n > (MODBUS_OUTREGISTER_COUNT + MODBUS_OUTREGISTER_2_COUNT)) // Check for maximum size
     {
         return -2;
     }
@@ -779,17 +774,17 @@ int modbus_copy_register_in(uint16_t *source, size_t n)
         secondRegisterBytes = (n - MODBUS_OUTREGISTER_COUNT);
         n = MODBUS_OUTREGISTER_COUNT;
     }
-    //memset(mb_mapping_in>tab_registers, 0, sizeof(mb_mapping_in->tab_registers));
+    // memset(mb_mapping_in>tab_registers, 0, sizeof(mb_mapping_in->tab_registers));
     memcpy(mb_mapping_in->tab_registers, source, sizeof(uint16_t) * n);
-    //Copy input Data also to special modbus library input-register
+    // Copy input Data also to special modbus library input-register
     memcpy(mb_mapping_in->tab_input_registers, source, sizeof(uint16_t) * n);
 
     if ( secondRegisterBytes > 0 )
     {
-        //calculate source offset for new starting point
+        // calculate source offset for new starting point
         source += (MODBUS_OUTREGISTER_COUNT * sizeof(uint16_t));
         memcpy(mb_mapping_2_in->tab_registers, source, secondRegisterBytes * sizeof(uint16_t));
-        //Copy input Data also to special modbus library input-register
+        // Copy input Data also to special modbus library input-register
         memcpy(mb_mapping_2_in->tab_input_registers, source, secondRegisterBytes * sizeof(uint16_t));
     }
 
@@ -813,7 +808,7 @@ int modbus_copy_register_out(uint8_t *dest, size_t n)
         return -1;
     }
 
-    //Check if Buffer (byte) is smaller than the total amount of registers (int16_t)
+    // Check if Buffer (byte) is smaller than the total amount of registers (int16_t)
     if (n < totalModbusBytes)
     {
         return -2;
@@ -833,7 +828,7 @@ int modbus_copy_register_out(uint8_t *dest, size_t n)
         memcpy(dest_buffer, mb_mapping_write->tab_registers, n);
         if ( secondRegisterBytes > 0 )
         {
-            //calculate source offset for new starting point
+            // calculate source offset for new starting point
             dest_buffer += (MODBUS_OUTREGISTER_COUNT * sizeof(uint16_t));
             memcpy(dest_buffer, mb_mapping_2_write->tab_registers, secondRegisterBytes);
         }

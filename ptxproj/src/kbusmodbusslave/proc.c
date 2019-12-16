@@ -15,7 +15,7 @@
 ///  \author   <BrT> : WAGO Kontakttechnik GmbH & Co. KG
 //------------------------------------------------------------------------------
 
-//Unless we are not a kernel module we will not write any information to /proc!!!
+// Unless we are not a kernel module we will not write any information to /proc!!!
 
 #include <stdio.h>
 #include <stdint.h>
@@ -51,7 +51,7 @@ int proc_createEntry(size_t terminalCnt, module_desc_t *modules, tldkc_KbusInfo_
     int fd_count = 0;
     int fd_info = 0;
 
-    //Create directory if not exists
+    // Create directory if not exists
     if (mkdir(FILE_PATH, 0755) < 0)
     {
         dprintf(VERBOSE_STD, "MKDIR %s failed: %s\n", FILE_PATH, strerror(errno));
@@ -92,13 +92,13 @@ int proc_createEntry(size_t terminalCnt, module_desc_t *modules, tldkc_KbusInfo_
     size_t i = 0;
     int k = 0;
     int bufferSize = sizeof(buffer);
-    char *ptr = buffer; //get start address of buffer
-    bytesToWrite = 0; //reset value
+    char *ptr = buffer; // get start address of buffer
+    bytesToWrite = 0; // reset value
 
     for (i = 0; i < terminalCnt; i++)
     {
-        bufferSize = sizeof(buffer); //reset orignal bufferSize
-        ptr = buffer; //reset ptr to buffer start
+        bufferSize = sizeof(buffer); // reset orignal bufferSize
+        ptr = buffer; // reset ptr to buffer start
         bytesToWrite = 0; // reset bytes to write
 
         k = snprintf(ptr, bufferSize, "Pos:%d \tType:", i);
@@ -138,8 +138,8 @@ int proc_createEntry(size_t terminalCnt, module_desc_t *modules, tldkc_KbusInfo_
 
         k = snprintf(ptr, bufferSize, "PiFormat:%d\n", termDescription[i].AdditionalInfo.PiFormat);
         bufferSize -= k; // reduce bufferSize
-        ptr += k;     //move buffer pointer to next position
-        bytesToWrite += k; //increment how much bytes has to be written.
+        ptr += k;     // move buffer pointer to next position
+        bytesToWrite += k; // increment how much bytes has to be written.
 
         while (((written = write(fd_info, buffer, bytesToWrite)) < 0) && errno == EINTR);
         if (written != bytesToWrite)
@@ -150,11 +150,10 @@ int proc_createEntry(size_t terminalCnt, module_desc_t *modules, tldkc_KbusInfo_
         }
     }
 
-
-exit:
-    close(fd_count);
-    close(fd_info);
-    return error;;
+    exit:
+        close(fd_count);
+        close(fd_info);
+        return error;;
 }
 
 /**
