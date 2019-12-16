@@ -567,6 +567,13 @@ static void *modbus_task(void *none)
         return NULL;
     }
 
+    //Enable debug output for modbus
+    if (vlevel >= VERBOSE_DEBUG)
+    {
+        dprintf(VERBOSE_DEBUG, "Modbus Debug enabled\n");
+        modbus_set_debug(ctx, 1);
+    }
+
     //Set Modbus response delay
     modbus_set_response_delay(conf_modbus_delay_ms);
 
