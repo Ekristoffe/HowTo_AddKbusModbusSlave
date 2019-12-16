@@ -781,12 +781,16 @@ int modbus_copy_register_in(uint16_t *source, size_t n)
     }
     //memset(mb_mapping_in>tab_registers, 0, sizeof(mb_mapping_in->tab_registers));
     memcpy(mb_mapping_in->tab_registers, source, sizeof(uint16_t) * n);
+    //Copy input Data also to special modbus library input-register
+    memcpy(mb_mapping_in->tab_input_registers, source, sizeof(uint16_t) * n);
 
     if ( secondRegisterBytes > 0 )
     {
         //calculate source offset for new starting point
         source += (MODBUS_OUTREGISTER_COUNT * sizeof(uint16_t));
         memcpy(mb_mapping_2_in->tab_registers, source, secondRegisterBytes * sizeof(uint16_t));
+        //Copy input Data also to special modbus library input-register
+        memcpy(mb_mapping_2_in->tab_input_registers, source, secondRegisterBytes * sizeof(uint16_t));
     }
 
     return n;

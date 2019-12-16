@@ -1,4 +1,4 @@
-VERSION = 1.4.0
+VERSION = 1.4.1
 
 CFLAGS=-c -Wall -Wextra -Os
 CFLAGS += -I$(SYSROOT)/usr/include/OsLinux/
