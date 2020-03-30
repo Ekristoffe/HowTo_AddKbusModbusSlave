@@ -59,7 +59,7 @@ static int conf_setParameter(const char *parameter, char *value)
         if(str2int(&conf_order_number, value, 10) != STR2INT_SUCCESS)
             return -1;
     }
-    if (strcmp(parameter, options[1]) == 0)
+    else if (strcmp(parameter, options[1]) == 0)
     {
         if(str2int(&conf_modbus_port, value, 10) != STR2INT_SUCCESS)
             return -1;
