@@ -61,7 +61,7 @@ MODBUS_BEGIN_DECLS
 #define _FC_READ_EXCEPTION_STATUS       0x07 // Diagnostics (Unsupported: Serial Line only)
 #define _FC_DIAGNOSTICS                 0x08 // Diagnostics (Unsupported: Serial Line only)
 #define _FC_GET_COMM_EVENT_COUNTER      0xOB // Diagnostics (Unsupported: Serial Line only)
-#define _FC_GET_COMM_EVENT_LOG          0x0C // Diagnostics (Unsupporte: Serial Line onlyd)
+#define _FC_GET_COMM_EVENT_LOG          0x0C // Diagnostics (Unsupported: Serial Line only)
 #define _FC_WRITE_MULTIPLE_COILS        0x0F // Internal Bits Or Physical coils
 #define _FC_WRITE_MULTIPLE_REGISTERS    0x10 // Internal Registers Or Physical Output Registers
 #define _FC_REPORT_SLAVE_ID             0x11 // Diagnostics (Unsupported: Serial Line only)
@@ -123,18 +123,15 @@ typedef struct _modbus_backend
     unsigned int checksum_length;
     unsigned int max_adu_length;
     int (*set_slave) (modbus_t *ctx, int slave);
-    int (*build_request_basis) (modbus_t *ctx, int function, int addr,
-                                int nb, uint8_t *req);
+    int (*build_request_basis) (modbus_t *ctx, int function, int addr, int nb, uint8_t *req);
     int (*build_response_basis) (sft_t *sft, uint8_t *rsp);
     int (*prepare_response_tid) (const uint8_t *req, int *req_length);
     int (*send_msg_pre) (uint8_t *req, int req_length);
     ssize_t (*send) (modbus_t *ctx, const uint8_t *req, int req_length);
     ssize_t (*recv) (modbus_t *ctx, uint8_t *rsp, int rsp_length);
-    int (*check_integrity) (modbus_t *ctx, uint8_t *msg,
-                            const int msg_length);
+    int (*check_integrity) (modbus_t *ctx, uint8_t *msg, const int msg_length);
     int (*pre_check_indication) (modbus_t *ctx, uint8_t const *req);
-    int (*pre_check_confirmation) (modbus_t *ctx, const uint8_t *req,
-                                   const uint8_t *rsp, int rsp_length);
+    int (*pre_check_confirmation) (modbus_t *ctx, const uint8_t *req, const uint8_t *rsp, int rsp_length);
     int (*connect) (modbus_t *ctx);
     void (*close) (modbus_t *ctx);
     int (*flush) (modbus_t *ctx);

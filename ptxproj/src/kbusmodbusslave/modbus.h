@@ -19,7 +19,7 @@
 #define _FC_READ_EXCEPTION_STATUS       0x07 // Diagnostics (Unsupported: Serial Line only)
 #define _FC_DIAGNOSTICS                 0x08 // Diagnostics (Unsupported: Serial Line only)
 #define _FC_GET_COMM_EVENT_COUNTER      0xOB // Diagnostics (Unsupported: Serial Line only)
-#define _FC_GET_COMM_EVENT_LOG          0x0C // Diagnostics (Unsupporte: Serial Line onlyd)
+#define _FC_GET_COMM_EVENT_LOG          0x0C // Diagnostics (Unsupported: Serial Line only)
 #define _FC_WRITE_MULTIPLE_COILS        0x0F // Internal Bits Or Physical coils
 #define _FC_WRITE_MULTIPLE_REGISTERS    0x10 // Internal Registers Or Physical Output Registers
 #define _FC_REPORT_SLAVE_ID             0x11 // Diagnostics (Unsupported: Serial Line only)
